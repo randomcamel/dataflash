@@ -31,10 +31,10 @@ module Dataflash
       raise ParseError.new("Parse of '#{answer}' failed.") unless num && unit && time
 
       unit = unit.to_sym
-      fail "Unknown unit: #{unit}" unless BITRATES[unit]
+      raise ParseError.new("Unknown unit: #{unit}") unless BITRATES[unit]
 
       num = num.to_f
-      fail "What does a negative data rate mean?" if num < 0
+      raise ParseError.new("What does a negative data rate mean?") if num < 0
 
       { num: num, unit: unit, time: time, bits: BITRATES[unit] * num }
     end
