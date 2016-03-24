@@ -1,16 +1,17 @@
 
-# this generates
 
-# { :b=>0.125, :B=>1, "Kb"=>8192, "KB"=>1024, "Mb"=>8388608, "MB"=>1048576, "Gb"=>8589934592, "GB"=>1073741824 }
-
-# but that would have been boring to type out.
 module Dataflash
+
+  # tables are boring to type. I have computers for that.
   BYTE_SCALES = { K: 1024, M: 1024*1024, G: 1024*1024*1024 }
   BITRATES = BYTE_SCALES.inject({ b: 1, B: 8 }) do |acc, prefix|
     acc["#{prefix[0]}b".to_sym] = prefix[1] * 8
     acc["#{prefix[0]}B".to_sym] = prefix[1]
     acc
   end
+
+  SECONDS = { s: 1, m: 60, h: 60*60 }
+
 
   class ParseError < StandardError; end
 
@@ -22,7 +23,6 @@ module Dataflash
 
       @units = BITRATES.keys
 
-      @seconds = { s: 1, m: 60, h: 60*60}
     end
 
     def parse(answer)
@@ -38,9 +38,12 @@ module Dataflash
 
       { num: num, unit: unit, time: time, bits: BITRATES[unit] * num }
     end
+  end
 
-
+  class QuestionGenerator
+    class <<self
+      def rate_question
+      end
+    end
   end
 end
-
-puts Dataflash::BITRATES.inspect

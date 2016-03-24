@@ -28,6 +28,14 @@ describe Dataflash do
       expect { p.parse("-3 Mbps") }.to raise_error(Dataflash::ParseError)
     end
 
+    it "parses a rate with comma" do
+      expect(p.parse("3,000 Mbps")).to eq({:num=>3.0, :unit=>:Mb, :time=>"s", :bits=>25165824.0})
+    end
+
+    it "parses a rate with /" do
+      expect(p.parse("3 Mb/s")).to eq({:num=>3.0, :unit=>:Mb, :time=>"s", :bits=>25165824.0})
+    end
+
     [1, 2.3].each do |number|
       Dataflash::BITRATES.keys.each do |data_unit|
         answer = "#{number} #{data_unit}ps"
