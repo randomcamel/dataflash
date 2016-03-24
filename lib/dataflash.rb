@@ -6,11 +6,13 @@
 # but that would have been boring to type out.
 module Dataflash
   BYTE_SCALES = { K: 1024, M: 1024*1024, G: 1024*1024*1024 }
-  BITRATES = BYTE_SCALES.inject({ b: 1.0/8, B: 1 }) do |acc, prefix|
-    acc["#{prefix[0]}b"] = prefix[1] * 8
-    acc["#{prefix[0]}B"] = prefix[1]
+  BITRATES = BYTE_SCALES.inject({ b: 1, B: 8 }) do |acc, prefix|
+    acc["#{prefix[0]}b".to_sym] = prefix[1] * 8
+    acc["#{prefix[0]}B".to_sym] = prefix[1]
     acc
   end
+
+  class ParseError < StandardError; end
 
   class Parser
 
@@ -26,9 +28,13 @@ module Dataflash
     def parse(answer)
       answer =~ /^([0-9.,]+)\s?([KMG]?[bB])[p\/](s|sec)$/
       num, unit, time = $1, $2, $3
+      raise ParseError.new("Parse of '#{answer}' failed.") unless num && unit && time
 
-      fail unless num && unit && time
+      unit = unit.to_sym
+      fail "Unknown unit: #{unit}" unless BITRATES[unit]
+
       num = num.to_f
+      fail "What does a negative data rate mean?" if num < 0
 
       { num: num, unit: unit, time: time, bits: BITRATES[unit] * num }
     end
