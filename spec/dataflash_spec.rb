@@ -1,7 +1,7 @@
 describe Dataflash do
   describe Dataflash::Parser do
 
-    let(:p) { Dataflash::Parser.new }
+    let(:p) { Dataflash::Parser }
 
     let(:expected) {
       {
@@ -45,6 +45,9 @@ describe Dataflash do
           # STDERR.puts %Q{ "#{answer}" => #{res.inspect} }
         end
       end
+    end
+
+    describe Dataflash::QuestionGenerator do
     end
   end
 end
