@@ -1,5 +1,5 @@
 describe Dataflash do
-  describe Dataflash::Parser do
+  describe "Parser" do
 
     let(:p) { Dataflash::Parser }
 
@@ -47,7 +47,17 @@ describe Dataflash do
       end
     end
 
-    describe Dataflash::QuestionGenerator do
+    describe "QuestionGenerator" do
+      let (:dq) { Dataflash::QuestionGenerator }
+      context ".close_enough?" do
+        it "has a correct default epsilon" do
+          expect(dq.close_enough?(95, 100)).to eq(true)
+        end
+
+        it "uses the passed-in epsilon" do
+          expect(dq.close_enough?(93, 100, 0.07)).to eq(true)
+        end
+      end
     end
   end
 end

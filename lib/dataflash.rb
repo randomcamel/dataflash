@@ -79,12 +79,16 @@ module Dataflash
 
       end
 
+      def close_enough?(input_answer, actual_answer, epsilon=0.05)
+        (actual_answer.to_f - input_answer) / actual_answer <= epsilon
+      end
+
       def powers_question
         exp = rand(16) + 4
         answer = 2**exp
 
-        ask "What is 2**#{exp}" do |response|
-
+        ask "What is 2**#{exp}: " do |response|
+          feedback(eval(response) == answer)
         end
       end
     end
@@ -104,8 +108,8 @@ module Dataflash
 
       i = 0
       loop do
-
-        QuestionGenerator.rate_question
+        # QuestionGenerator.rate_question
+        QuestionGenerator.powers_question
         i += 1
         break if i > 50
       end
