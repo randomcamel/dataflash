@@ -57,6 +57,10 @@ describe Dataflash do
         it "uses the passed-in epsilon" do
           expect(dq.close_enough?(93, 100, 0.07)).to eq(true)
         end
+
+        it "handles negative differences" do
+          expect(dq.close_enough?(103, 100, 0.07)).to eq(true)
+        end
       end
     end
   end

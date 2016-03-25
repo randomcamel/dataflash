@@ -1,4 +1,3 @@
-require_relative "monkeypatch"
 
 module Dataflash
 
@@ -51,7 +50,7 @@ module Dataflash
       end
 
       def feedback(got_it_right, actual_answer, correct_text: "Correct!", incorrect_text: "Bzzzt!")
-        puts "    elapsed time: #{@@elapsed_time}"
+        puts "    elapsed time: #{@@elapsed_time}s"
 
         if got_it_right
           puts "\n#{correct_text} The answer is #{actual_answer}.\n\n"
@@ -84,14 +83,15 @@ module Dataflash
       end
 
       def close_enough?(input_answer, actual_answer, epsilon=0.05)
-        actual_margin = (actual_answer.to_f - input_answer) / actual_answer
-        puts "\n    off by #{(actual_margin * 100).to_i.abs}%"
+        actual_margin = ((actual_answer.to_f - input_answer) / actual_answer).abs
+        @@epsilon_pct = (actual_margin * 100).to_i
+        @@epsilon_pct = "< 1" if @@epsilon_pct == 0
         actual_margin <= epsilon
       end
 
       def powers_question
         exp = rand(20) + 4
-        # exp = 13
+        # exp = 17
         answer = 2**exp
         approx_ok = exp > 12
 
@@ -100,6 +100,7 @@ module Dataflash
           ask "#{qtext} (approximate is OK)?: " do |response|
             user_answer = eval(response)
             positive = close_enough?(user_answer, answer)
+            puts "    off by #{@@epsilon_pct}%"
             feedback(positive, answer, correct_text: "Close enough!")
           end
         else
