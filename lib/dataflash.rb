@@ -44,11 +44,15 @@ module Dataflash
     class <<self
       def ask(text, &answer_proc)
         print text
+        t1 = Time.now
         response = $stdin.readline.chomp
+        @@elapsed_time =  sprintf("%.1f", Time.now - t1).to_f
         yield response
       end
 
       def feedback(got_it_right, actual_answer, correct_text: "Correct!", incorrect_text: "Bzzzt!")
+        puts "    elapsed time: #{@@elapsed_time}"
+
         if got_it_right
           puts "\n#{correct_text} The answer is #{actual_answer}.\n\n"
         else
@@ -81,34 +85,33 @@ module Dataflash
 
       def close_enough?(input_answer, actual_answer, epsilon=0.05)
         actual_margin = (actual_answer.to_f - input_answer) / actual_answer
-        puts "\n\toff by #{(actual_margin * 100).to_i}%"
+        puts "\n    off by #{(actual_margin * 100).to_i}%"
         actual_margin <= epsilon
       end
 
       def powers_question
         exp = rand(16) + 4
-        exp = 13
+        # exp = 13
         answer = 2**exp
         approx_ok = exp > 12
 
-        approx_text = approx_ok ? " (approximate is OK)" : ""
-
-        ask "What is 2**#{exp}#{approx_text}: " do |response|
-          user_answer = eval(response)
-          positive = if approx_ok
-            close_enough?(user_answer, answer)
-          else
-            user_answer == answer
+        if approx_ok
+          ask "What is 2**#{exp} (approximate is OK): " do |response|
+            user_answer = eval(response)
+            positive = close_enough?(user_answer, answer)
+            feedback(positive, answer, correct_text: "Close enough!")
           end
-
-          feedback(positive, answer)
+        else
+          ask "What is 2**#{exp}: " do |response|
+            feedback(answer = eval(response), answer)
+          end
         end
       end
     end
   end
 
   class Runner
-    trap("INT") { exit }
+    trap("INT") { puts "\nkthxbye"; exit }
 
     LEVELS = { "beginner" => 1, "medium" => 2, "hard" => 3 }
 
