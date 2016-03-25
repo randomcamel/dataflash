@@ -85,24 +85,25 @@ module Dataflash
 
       def close_enough?(input_answer, actual_answer, epsilon=0.05)
         actual_margin = (actual_answer.to_f - input_answer) / actual_answer
-        puts "\n    off by #{(actual_margin * 100).to_i}%"
+        puts "\n    off by #{(actual_margin * 100).to_i.abs}%"
         actual_margin <= epsilon
       end
 
       def powers_question
-        exp = rand(16) + 4
+        exp = rand(20) + 4
         # exp = 13
         answer = 2**exp
         approx_ok = exp > 12
 
+        qtext = "What is 2**#{exp}"
         if approx_ok
-          ask "What is 2**#{exp} (approximate is OK): " do |response|
+          ask "#{qtext} (approximate is OK)?: " do |response|
             user_answer = eval(response)
             positive = close_enough?(user_answer, answer)
             feedback(positive, answer, correct_text: "Close enough!")
           end
         else
-          ask "What is 2**#{exp}: " do |response|
+          ask "#{qtext}?: " do |response|
             feedback(answer = eval(response), answer)
           end
         end
