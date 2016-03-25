@@ -48,11 +48,11 @@ module Dataflash
         yield response
       end
 
-      def feedback(got_it_right, correct_text: "Correct!", incorrect_text: "Bzzzt!")
+      def feedback(got_it_right, actual_answer, correct_text: "Correct!", incorrect_text: "Bzzzt!")
         if got_it_right
-          puts "\n#{correct_text}\n\n"
+          puts "\n#{correct_text} The answer is #{actual_answer}.\n\n"
         else
-          puts "\n#{incorrect_text}\n\n"
+          puts "\n#{incorrect_text} Correct answer is #{actual_answer}.\n\n"
         end
       end
 
@@ -71,7 +71,7 @@ module Dataflash
             # the parser only takes fully-formatted rates.
             response += " #{from_rate}" if response !~ /#{from_rate}\s*$/
 
-            feedback(Parser.parse(response)[:bits] == answer_bits)
+            feedback(Parser.parse(response)[:bits] == answer_bits, "hurrrrr")
           rescue ParseError
             puts "\nInvalid answer format. Next!\n"
           end
@@ -80,15 +80,28 @@ module Dataflash
       end
 
       def close_enough?(input_answer, actual_answer, epsilon=0.05)
-        (actual_answer.to_f - input_answer) / actual_answer <= epsilon
+        actual_margin = (actual_answer.to_f - input_answer) / actual_answer
+        puts "\n\toff by #{(actual_margin * 100).to_i}%"
+        actual_margin <= epsilon
       end
 
       def powers_question
         exp = rand(16) + 4
+        exp = 13
         answer = 2**exp
+        approx_ok = exp > 12
 
-        ask "What is 2**#{exp}: " do |response|
-          feedback(eval(response) == answer)
+        approx_text = approx_ok ? " (approximate is OK)" : ""
+
+        ask "What is 2**#{exp}#{approx_text}: " do |response|
+          user_answer = eval(response)
+          positive = if approx_ok
+            close_enough?(user_answer, answer)
+          else
+            user_answer == answer
+          end
+
+          feedback(positive, answer)
         end
       end
     end
