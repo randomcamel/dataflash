@@ -42,27 +42,50 @@ module Dataflash
     UNITS = BITRATES.keys
 
     class <<self
+      def ask(text, &answer_proc)
+        print text
+        response = $stdin.readline.chomp
+        yield response
+      end
+
+      def feedback(got_it_right, correct_text: "Correct!", incorrect_text: "Bzzzt!")
+        if got_it_right
+          puts "\n#{correct_text}\n\n"
+        else
+          puts "\n#{incorrect_text}\n\n"
+        end
+      end
 
       def rate_question
         # for beginner, just do "Convert 1 $thing1 to $thing2"
 
-        from, to = UNITS.sample(2).map {|o| "#{o}ps"}
-        from = "1 #{from}"
-        answer_bits = Parser.parse(from)[:bits]
+        from_size, to_size = UNITS.sample(2)
+        from_size, to_size = %w{MB MB}    # for testing.
+        from_rate, to_rate = [from_size, to_size].map { |o| "#{o}ps" }
 
-        print "Convert #{from} to #{to} [#{answer_bits}]: "
-        response = $stdin.readline.chomp
+        from_text = "1 #{from_rate}"
+        answer_bits = Parser.parse(from_text)[:bits]
 
-        begin
-          if Parser.parse(to)[:bits] == answer_bits
-            puts "correct!\n\n"
+        ask "Convert #{from_text} to #{to_rate}: " do |response|
+          begin
+            # the parser only takes fully-formatted rates.
+            response += " #{from_rate}" if response !~ /#{from_rate}\s*$/
+
+            feedback(Parser.parse(response)[:bits] == answer_bits)
+          rescue ParseError
+            puts "\nInvalid answer format. Next!\n"
           end
-        rescue ParseError
-          puts "\nInvalid answer format. Please try again.\n"
         end
+
       end
 
       def powers_question
+        exp = rand(16) + 4
+        answer = 2**exp
+
+        ask "What is 2**#{exp}" do |response|
+
+        end
       end
     end
   end
