@@ -14,6 +14,8 @@ module Dataflash
 
   SECONDS = { s: 1, m: 60, h: 60*60 }
 
+  APPROX_TWOS_UNTIL = 13
+
   class ParseError < StandardError; end
 
   class Parser
@@ -39,9 +41,50 @@ module Dataflash
     end
   end
 
+  class TablePrinter
+
+    def self.round(i, nearest=10)
+      raise ArgumentError.new("Argument #{nearest} is not a multiple of 10.") if nearest.to_s !~ /^10+$/
+
+      if false && i >= nearest
+        i
+      else
+        (i.to_f / nearest).round * nearest
+      end
+    end
+
+    def self.border(n); '-' * n; end
+
+    def self.print
+      min, max = [ QuestionGenerator::MIN_EXP, QuestionGenerator::MAX_EXP ]
+      max_exp_digits = max.to_s.size
+      max_prod_digits = (2**max).to_s.size
+
+      # require 'pry'; binding.pry
+      total_width = false
+      lines = []
+
+      min.upto(max) do |n|
+        exp_col = sprintf "| %#{max_exp_digits}d ", n
+        prod_col = sprintf "| %-#{max_prod_digits}d ", 2**n
+        est_col = sprintf "| %-#{max_prod_digits}d |", round(2**n, 1000)
+        lines << exp_col + prod_col + est_col
+      end
+
+      border = border(lines[-1].size)
+      lines.each_with_index do |line, i|
+        puts border if i % 3 == 0
+        puts line
+      end
+      puts border
+    end
+  end
+
   class QuestionGenerator
 
     UNITS = BITRATES.keys
+    MIN_EXP = 4
+    MAX_EXP = 24
 
     class <<self
       def ask(text, &answer_proc)
@@ -95,10 +138,14 @@ module Dataflash
         actual_margin <= epsilon
       end
 
+      def rand_exp
+        rand(MAX_EXP - MIN_EXP) + MIN_EXP
+      end
+
       def powers_question(debug_exp=nil)
-        exp = debug_exp > 0 ? debug_exp : rand(20) + 4
+        exp = debug_exp > 0 ? debug_exp : rand_exp
         answer = 2**exp
-        approx_ok = exp > 12
+        approx_ok = exp >= APPROX_TWOS_UNTIL
 
         qtext = "What is 2**#{exp}"
         if approx_ok
@@ -167,6 +214,11 @@ if __FILE__ == $0
     question_types = %w{powers rates}
     opts.on("-t", "--type [TYPE]", question_types, "Type of question (#{f(question_types)})") do |type|
       option_values.question_type ||= type
+    end
+
+    opts.on("-p", "--twos", "Print table of powers of 2 and nearest multiple of 10") do
+      Dataflash::TablePrinter.print
+      exit
     end
 
     opts.on("-h", "--help", "Prints this help message") do

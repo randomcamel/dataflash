@@ -63,5 +63,15 @@ describe Dataflash do
         end
       end
     end
+
+    describe "TablePrinter" do
+      def round(n, nearest); Dataflash::TablePrinter.round(n, nearest); end
+
+      it "rounds correctly" do
+        expect(round(16, 10)).to eq(20)
+        expect(round(9, 10)).to eq(10)
+        expect(round(86, 100)).to eq(100)
+      end
+    end
   end
 end
