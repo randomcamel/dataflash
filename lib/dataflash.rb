@@ -52,13 +52,16 @@ module Dataflash
         yield response
       end
 
-      def feedback(got_it_right, actual_answer, correct_text: "Correct!", incorrect_text: "Bzzzt!")
+      def feedback(user_correct, actual_answer, input_args = {})
+        args = OpenStruct.new(input_args.merge(correct_text: "Correct!",
+                              incorrect_text: "Bzzzt!"))
+
         puts "    elapsed time: #{@@elapsed_time}s"
 
-        if got_it_right
-          puts "\n#{correct_text} The answer is #{actual_answer}.\n\n"
+        if user_correct
+          puts "\n#{args.correct_text} The answer is #{actual_answer}.\n\n"
         else
-          puts "\n#{incorrect_text} Correct answer is #{actual_answer}.\n\n"
+          puts "\n#{args.incorrect_text} Correct answer is #{actual_answer}.\n\n"
         end
       end
 
@@ -93,7 +96,7 @@ module Dataflash
       end
 
       def powers_question(debug_exp=nil)
-        exp = debug_exp || rand(20) + 4
+        exp = debug_exp > 0 ? debug_exp : rand(20) + 4
         answer = 2**exp
         approx_ok = exp > 12
 
@@ -107,7 +110,7 @@ module Dataflash
           end
         else
           ask "#{qtext}?: " do |response|
-            feedback(answer = eval(response), answer)
+            feedback(answer == eval(response), answer)
           end
         end
       end
@@ -120,14 +123,14 @@ module Dataflash
     def self.run(opts)
       puts "#{opts.inspect}\n\n"
 
-      debug_val = false
+      debug_val = -1    # -1 is invalid for everything.
       i = 0
       loop do
         case opts.question_type
         when :rates
           QuestionGenerator.rate_question
         when :powers
-          debug_val ||= 10
+          debug_val ||= 20
           QuestionGenerator.powers_question(debug_val)
         else
           raise ArgumentError.new("Unknown question type #{opts.question_type.inspect}")
