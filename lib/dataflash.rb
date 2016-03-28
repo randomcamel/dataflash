@@ -174,8 +174,9 @@ if __FILE__ == $0
     opts.separator ""
     opts.separator "Development options:"
 
-    opts.on("-o", "--once", "Only ask one question") do
-      option_values.question_count = 1
+    opts.on("-n", "--num [COUNT]", Integer, "Only ask COUNT questions (defaults to 1)") do |val|
+      puts val.inspect
+      option_values.question_count = val || 1
     end
 
     opts.on("-d", "--debug", "Debug mode (same question over and over)") do |debug|
