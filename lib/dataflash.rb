@@ -1,4 +1,7 @@
 
+require "optparse"
+require "ostruct"
+
 module Dataflash
 
   # tables are boring to type. I have computers for that.
@@ -115,21 +118,22 @@ module Dataflash
   class Runner
     trap("INT") { puts "\nkthxbye"; exit }
 
-    LEVELS = { "beginner" => 1, "medium" => 2, "hard" => 3 }
-
-    def self.run(level)
-      if LEVELS.has_key?(level.to_s)
-        level = LEVELS[level]
-      elsif !LEVELS.has_value?(level.to_i)
-        raise ArgumentError.new("Invalid level '#{level}'; levels are #{LEVELS.inspect}")
-      end
+    def self.run(opts)
+      puts "#{opts.inspect}\n\n"
 
       i = 0
       loop do
-        # QuestionGenerator.rate_question
-        QuestionGenerator.powers_question
+        case opts.question_type
+        when :rates
+          QuestionGenerator.rate_question
+        when :powers
+          QuestionGenerator.powers_question
+        else
+          raise ArgumentError.new("Unknown question type #{opts.question_type.inspect}")
+        end
+
         i += 1
-        break if i > 50
+        break if i == opts.question_count
       end
 
     end
@@ -137,5 +141,47 @@ module Dataflash
 end
 
 if __FILE__ == $0
-  Dataflash::Runner.run(1)
+  option_values = OpenStruct.new(question_type: :powers,
+                                 level: :beginner,
+                                 debug: false, question_count: 50)
+
+  def f(options)
+    options.join("|")
+  end
+
+  OptionParser.new do |opts|
+    opts.banner = "\nUsage: #{$0} [options]"
+
+    opts.separator ""
+    opts.separator "User options:"
+
+    levels = %w{beginner medium hard}
+    opts.on("-l", "--level LEVEL", levels, "Difficulty level (#{f(levels)})") do |level|
+      options.level ||= levels.find_index(level)
+    end
+
+    question_types = %w{powers rates}
+    opts.on("-t", "--type [TYPE]", question_types, "Type of question (#{f(question_types)})") do |type|
+      option_values.question_type ||= type
+    end
+
+    opts.on("-h", "--help", "Prints this help message") do
+      puts opts
+      exit
+    end
+
+    opts.separator ""
+    opts.separator "Development options:"
+
+    opts.on("-o", "--once", "Only ask one question") do
+      option_values.question_count = 1
+    end
+
+    opts.on("-d", "--debug", "Debug mode (same question over and over)") do |debug|
+      option_values.debug ||= debug
+    end
+
+  end.parse!
+
+  Dataflash::Runner.run(option_values)
 end
