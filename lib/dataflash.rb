@@ -92,9 +92,8 @@ module Dataflash
         actual_margin <= epsilon
       end
 
-      def powers_question
-        exp = rand(20) + 4
-        # exp = 17
+      def powers_question(debug_exp=nil)
+        exp = debug_exp || rand(20) + 4
         answer = 2**exp
         approx_ok = exp > 12
 
@@ -121,13 +120,15 @@ module Dataflash
     def self.run(opts)
       puts "#{opts.inspect}\n\n"
 
+      debug_val = false
       i = 0
       loop do
         case opts.question_type
         when :rates
           QuestionGenerator.rate_question
         when :powers
-          QuestionGenerator.powers_question
+          debug_val ||= 10
+          QuestionGenerator.powers_question(debug_val)
         else
           raise ArgumentError.new("Unknown question type #{opts.question_type.inspect}")
         end
