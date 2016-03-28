@@ -56,11 +56,20 @@ module Dataflash
     def self.border(n); '-' * n; end
 
     def self.print
+      lines = table_lines()
+      border = border(lines[-1].size)
+      lines.each_with_index do |line, i|
+        puts border if i % 3 == 0
+        puts line
+      end
+      puts border
+    end
+
+    def self.table_lines
       min, max = [ QuestionGenerator::MIN_EXP, QuestionGenerator::MAX_EXP ]
       max_exp_digits = max.to_s.size
       max_prod_digits = (2**max).to_s.size
 
-      # require 'pry'; binding.pry
       total_width = false
       lines = []
 
@@ -71,12 +80,7 @@ module Dataflash
         lines << exp_col + prod_col + est_col
       end
 
-      border = border(lines[-1].size)
-      lines.each_with_index do |line, i|
-        puts border if i % 3 == 0
-        puts line
-      end
-      puts border
+      lines
     end
   end
 
