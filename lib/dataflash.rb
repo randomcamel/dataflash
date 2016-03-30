@@ -76,6 +76,12 @@ module Dataflash
 
     def self.border(n); '-' * n; end
 
+    def self.commaize(n)
+      raise ArgumentError.new("Invalid arg '#{n}' in #commaize") unless n.integer?
+
+      n.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
+    end
+
     def self.print
       lines = table_lines()
       border = border(lines[-1].size)

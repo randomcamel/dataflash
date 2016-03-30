@@ -66,6 +66,7 @@ describe Dataflash do
 
     describe "TablePrinter" do
       def approx(exp); Dataflash::TablePrinter.approximate(exp); end
+      def comma(n); Dataflash::TablePrinter.commaize(n); end
 
       before {
         stub_const("Dataflash::APPROX_TWOS_UNTIL", 15)
@@ -76,9 +77,18 @@ describe Dataflash do
         expect(approx(15)).to eq(2**15)
         expect(approx(16)).to eq(2**16)
         expect(approx(17)).to eq(130000)
+
         expect { approx(-3) }.to raise_error(ArgumentError, /Negative exponents/)
       end
 
+      it "commaizes correctly" do
+        expect(comma(500)).to eq("500")
+        expect(comma(1000)).to eq("1,000")
+        expect(comma(-52_000)).to eq("-52,000")
+        expect(comma(123_456_789)).to eq("123,456,789")
+
+        expect { comma(3.14159) }.to raise_error(ArgumentError, "Invalid arg '3.14159' in #commaize")
+      end
     end
   end
 end
