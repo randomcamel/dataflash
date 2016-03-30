@@ -95,15 +95,15 @@ module Dataflash
     def self.table_lines
       min, max = [ QuestionGenerator::MIN_EXP, QuestionGenerator::MAX_EXP ]
       max_exp_digits = max.to_s.size
-      max_prod_digits = (2**max).to_s.size
+      max_prod_digits = commaize(2**max).size
 
       total_width = false
       lines = []
 
       min.upto(max) do |n|
         exp_col = sprintf "| %#{max_exp_digits}d ", n
-        prod_col = sprintf "| %-#{max_prod_digits}d ", 2**n
-        est_col = sprintf "| %-#{max_prod_digits}d |", approximate(n)
+        prod_col = sprintf "| %-#{max_prod_digits}s ", commaize(2**n)
+        est_col = sprintf "| %-#{max_prod_digits}s |", commaize(approximate(n))
         lines << exp_col + prod_col + est_col
       end
 
@@ -234,6 +234,7 @@ if __FILE__ == $0
   OptionParser.new do |opts|
     opts.banner = "\nUsage: #{$0} [options]"
 
+    opts.separator "\nKeyword values for switches do text completion."
     opts.separator ""
     opts.separator "User options:"
 
@@ -247,7 +248,8 @@ if __FILE__ == $0
       option_values.question_type ||= type
     end
 
-    opts.on("-p", "--twos", "Print table of powers of 2 and nearest multiple of 10") do
+    opts.on("-p", "--twos", "Print table of powers of 2 and nearest multiple of 10",
+            "(overrides all other options)") do
       Dataflash::TablePrinter.print
       exit
     end
@@ -266,7 +268,7 @@ if __FILE__ == $0
     end
 
     opts.on("-d", "--debug", "Debug mode (same question over and over)",
-            "compatible, but ineffective, with -n") do |debug|
+            "(compatible, but ineffective, with -n)") do |debug|
       option_values.debug ||= debug
     end
 
