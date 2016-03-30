@@ -65,13 +65,20 @@ describe Dataflash do
     end
 
     describe "TablePrinter" do
-      def round(n, nearest); Dataflash::TablePrinter.round(n, nearest); end
+      def approx(exp); Dataflash::TablePrinter.approximate(exp); end
 
-      it "rounds correctly" do
-        expect(round(16, 10)).to eq(20)
-        expect(round(9, 10)).to eq(10)
-        expect(round(86, 100)).to eq(100)
+      before {
+        stub_const("Dataflash::APPROX_TWOS_UNTIL", 15)
+      }
+
+      it "approximates correctly" do
+        expect(approx(14)).to eq(2**14)
+        expect(approx(15)).to eq(2**15)
+        expect(approx(16)).to eq(2**16)
+        expect(approx(17)).to eq(130000)
+        expect { approx(-3) }.to raise_error(ArgumentError, /Negative exponents/)
       end
+
     end
   end
 end

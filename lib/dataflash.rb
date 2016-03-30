@@ -43,13 +43,34 @@ module Dataflash
 
   class TablePrinter
 
-    def self.round(i, nearest=10)
-      raise ArgumentError.new("Argument #{nearest} is not a multiple of 10.") if nearest.to_s !~ /^10+$/
+    # A black box to return some approximated value of 2**n.
+    #
+    # @param exp [Fixnum] the 'n' in '2**n'.
+    # @returns the approximated value.
+    def self.approximate(exp)
 
-      if false && i >= nearest
-        i
+      raise ArgumentError.new("Negative exponents aren't valid here") if exp < 0
+
+      # +/- 2**(n-1) is the signed range for a given width, so let's challenge ourselves.
+      #
+      # in other contexts, using Math.log2 like this would eventually show you the dread sorrows of floating-
+      # point numbers, but this is much more compact than the traditional (and more accurate) ways of doing it
+      # (e.g counting set bits).
+      meaningful_exp = [exp, exp+1].any? { |e| Math.log2(e) % 1 == 0 }
+
+      power = 2**exp
+
+      # nope, you have to know these.
+      if exp < APPROX_TWOS_UNTIL || meaningful_exp
+        return power
       else
-        (i.to_f / nearest).round * nearest
+        # well, whatever. first 2 digits + order of magnitude is fine.
+
+        # this is the wasteful, yet Rubyish, way to do this. it's a little silly to return an integer--it only
+        # gets used in strings--except that the function is named "approximate" and that makes me think of
+        # numbers.
+        s = power.to_s
+        return (s[0..1] + ("0" * (s.size - 2))).to_i
       end
     end
 
@@ -76,7 +97,7 @@ module Dataflash
       min.upto(max) do |n|
         exp_col = sprintf "| %#{max_exp_digits}d ", n
         prod_col = sprintf "| %-#{max_prod_digits}d ", 2**n
-        est_col = sprintf "| %-#{max_prod_digits}d |", round(2**n, 1000)
+        est_col = sprintf "| %-#{max_prod_digits}d |", approximate(n)
         lines << exp_col + prod_col + est_col
       end
 
@@ -238,7 +259,8 @@ if __FILE__ == $0
       option_values.question_count = val || 1
     end
 
-    opts.on("-d", "--debug", "Debug mode (same question over and over)") do |debug|
+    opts.on("-d", "--debug", "Debug mode (same question over and over)",
+            "compatible, but ineffective, with -n") do |debug|
       option_values.debug ||= debug
     end
 
