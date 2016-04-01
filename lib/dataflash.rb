@@ -14,7 +14,7 @@ module Dataflash
 
   SECONDS = { s: 1, m: 60, h: 60*60 }
 
-  APPROX_TWOS_UNTIL = 13
+  APPROX_TWOS_UNTIL = 12
 
   class ParseError < StandardError; end
 
@@ -55,7 +55,7 @@ module Dataflash
       #
       # in other contexts, using Math.log2 like this would eventually show you the dread sorrows of floating-
       # point numbers, but this is much more compact than the traditional (and more accurate) ways of doing it
-      # (e.g counting set bits).
+      # (e.g. counting set bits).
       meaningful_exp = [exp, exp+1].any? { |e| Math.log2(e) % 1 == 0 }
 
       power = 2**exp
@@ -67,8 +67,8 @@ module Dataflash
         # well, whatever. first 2 digits + order of magnitude is fine.
 
         # this is the wasteful, yet Rubyish, way to do this. it's a little silly to return an integer--it only
-        # gets used in strings--except that the function is named "approximate" and that makes me think of
-        # numbers.
+        # gets used in strings--but the function is named "approximate" and takes a number, so it should
+        # return a number.
         s = power.to_s
         return (s[0..1] + ("0" * (s.size - 2))).to_i
       end
@@ -79,20 +79,15 @@ module Dataflash
     def self.commaize(n)
       raise ArgumentError.new("Invalid arg '#{n}' in #commaize") unless n.integer?
 
+      # thanks, Internet!
       n.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
     end
 
     def self.print
-      lines = table_lines()
-      border = border(lines[-1].size)
-      lines.each_with_index do |line, i|
-        puts border if i % 3 == 0
-        puts line
-      end
-      puts border
+      puts table
     end
 
-    def self.table_lines
+    def self.table(border_at=3)
       min, max = [ QuestionGenerator::MIN_EXP, QuestionGenerator::MAX_EXP ]
       max_exp_digits = max.to_s.size
       max_prod_digits = commaize(2**max).size
@@ -107,7 +102,15 @@ module Dataflash
         lines << exp_col + prod_col + est_col
       end
 
-      lines
+      border = border(lines.first.size)
+      formatted_lines = []
+
+      lines.each_with_index do |line, i|
+        formatted_lines << border if i % border_at == 0
+        formatted_lines << line
+      end
+      formatted_lines << border
+      formatted_lines
     end
   end
 
