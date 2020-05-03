@@ -247,7 +247,7 @@ if __FILE__ == $0
     end
 
     question_types = %w{powers rates}
-    opts.on("-t", "--type [TYPE]", question_types, "Type of question (#{f(question_types)})") do |type|
+    opts.on("-t", "--type TYPE", question_types, "Type of question (#{f(question_types)})") do |type|
       option_values.question_type ||= type
     end
 
